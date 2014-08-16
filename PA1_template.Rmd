@@ -1,20 +1,110 @@
 # Reproducible Research: Peer Assessment 1
-
+author: "David Parker"  
+date: "Friday, August 15, 2014"  
+output: html_document  
 
 ## Loading and preprocessing the data
-
+```{r}
+library(plyr)
+library(ggplot2)
+activity <- read.csv('activity.csv', colClasses = c('integer', 'Date', 'integer'), 
+                     stringsAsFactors = FALSE)
+head(activity,3)
+tail(activity,3)
+summary(activity)
+```
 
 
 ## What is mean total number of steps taken per day?
+```{r}
+actDaily <- ddply(activity, .(date), summarize, 
+                  dailySteps = sum(steps, na.rm = TRUE),
+                  meanInt = round(mean(steps, na.rm = TRUE), 0))
+```
 
+Histogram of *daily steps* taken:  
+```{r}
+ggplot(actDaily, aes(x = dailySteps)) + geom_histogram(binwidth = 710)
+```
+
+Mean daily *steps*:  
+```{r}
+round(mean(actDaily$dailySteps, na.rm = TRUE), 0)
+```
+
+Median daily *steps*:  
+```{r}
+round(median(actDaily$dailySteps, na.rm = TRUE), 0)
+```
 
 
 ## What is the average daily activity pattern?
+Calculate the mean *steps* for each *interval*.
+```{r}
+actInterval <- ddply(activity, .(interval), summarize, 
+                     meanSteps = round(mean(steps, na.rm = TRUE), 0))
+```
+
+Merge the mean *steps* for each *interval* with the *activity* data frame.
+```{r}
+actMerge <- join(x = activity, y = actInterval, by = 'interval')
+```
+
+Plot of the 5-minute interval and the average number of steps taken, averaged across all days.  
+```{r}
+ggplot(actMerge, aes(x = interval, y = meanSteps)) + geom_line()
+```
+
+Five minute interval across all days with the most steps.  
+```{r}
+actMerge[which.max(actMerge$steps), c('steps','date', 'interval')]
+```
 
 
+## Imputing missing values  
+Total number of rows with missing values is:  
+```{r}
+nrow(activity) - nrow(na.omit(activity))
+```
+This number agrees with the NA's shown in summary from step 1.
 
-## Imputing missing values
+Now to fill in the missing values using the mean of steps for said interval.  
+The mean steps is in *actMerge* data frame. Simply need to replace the *steps* with *meanSteps* where *NA*'s exist, then place back in the original **activity** data frame.  
+````{r}
+actMerge[which(is.na(actMerge$steps)),]$steps <- 
+  actMerge[which(is.na(actMerge$steps)),]$meanSteps
+activity <- actMerge[, c('meanSteps', 'date', 'interval')]
+names(activity)[[1]] <- c('steps')
+```
+
+Plot of the 5-minute interval and the number of steps taken, across all days using **imputed** data.  
+```{r}
+ggplot(activity, aes(x = interval, y = steps)) + geom_line()
+```
+
+Recompute the *mean* and *median* daily *steps* with imputed values.
+```{r}
+actDaily <- ddply(activity, .(date), summarize, 
+                  dailySteps = sum(steps, na.rm = TRUE),
+                  meanInt = round(mean(steps, na.rm = TRUE), 0))
+```
+
+Histogram of *daily steps* using imputed values:  
+```{r}
+ggplot(actDaily, aes(x = dailySteps)) + geom_histogram(binwidth = 5)
+```
 
 
+Mean daily *steps*:  
+```{r}
+round(mean(actDaily$dailySteps, na.rm = TRUE), 0)
+```
+
+Median daily *steps*:  
+```{r}
+round(median(actDaily$dailySteps, na.rm = TRUE), 0)
+```
+
+The impact of imputing missing data was dramatic in this case. Even though a line plot was very similar to that with ignoring missing values, estimates for mean and median and resulting histogram were obvious.  
 
 ## Are there differences in activity patterns between weekdays and weekends?
