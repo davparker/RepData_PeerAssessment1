@@ -9,6 +9,7 @@ library(plyr)
 library(ggplot2)
 activity <- read.csv('activity.csv', colClasses = c('integer', 'Date', 'integer'), 
                      stringsAsFactors = FALSE)
+activity$date <- as.POSIXlt(activity$date, tz = '', '%Y%m%d')
 head(activity,3)
 tail(activity,3)
 summary(activity)
@@ -108,3 +109,13 @@ round(median(actDaily$dailySteps, na.rm = TRUE), 0)
 The impact of imputing missing data was dramatic in this case. Even though a line plot was very similar to that with ignoring missing values, estimates for mean and median and resulting histogram were obvious.  
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r}
+activity$wkday <- factor(
+  ifelse(isWeekday(activity$date), paste('weekday'), paste('weekend') ))
+```
+
+```{r}
+ggplot(activity, aes(x = interval, y = steps)) + 
+       geom_line() + facet_wrap(~wkday, nrow = 2)
+```
+The patterns appear to be identical. Possibly a result of imputing the missing values? 
