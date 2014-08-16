@@ -7,6 +7,7 @@ output: html_document
 ```{r}
 library(plyr)
 library(ggplot2)
+library(timeDate)
 activity <- read.csv('activity.csv', colClasses = c('integer', 'Date', 'integer'), 
                      stringsAsFactors = FALSE)
 activity$date <- as.POSIXlt(activity$date, tz = '', '%Y%m%d')
@@ -117,5 +118,6 @@ activity$wkday <- factor(
 ```{r}
 ggplot(activity, aes(x = interval, y = steps)) + 
        geom_line() + facet_wrap(~wkday, nrow = 2)
-```
+```  
+  
 The patterns appear to be identical. Possibly a result of imputing the missing values? 
