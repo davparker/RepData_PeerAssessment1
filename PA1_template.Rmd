@@ -77,6 +77,8 @@ Now to fill in the missing values using the mean of steps for said interval.
 The mean steps is caculated in *actMerge* data frame replacing *NA*'s with average *steps* per *interval*. Simply need to write this data back to the *activity* data frame.  
 
 ````{r}
+actMerge[which(is.na(actMerge$steps)),]$steps <- 
+ actMerge[which(is.na(actMerge$steps)),]$meanSteps
 activity <- actMerge[, c('steps', 'date', 'interval')]
 ```
 
