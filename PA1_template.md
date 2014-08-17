@@ -56,7 +56,7 @@ summary(activity)
 actDaily <- ddply(activity, .(date), summarize, dailySteps = sum(steps, na.rm = TRUE))
 ```
 
-*Histogram* of *total* daily *steps*:  
+**Histogram** of *total* daily *steps*:  
 
 ```r
 ggplot(actDaily, aes(x = dailySteps)) + geom_histogram(binwidth = 710)
@@ -182,21 +182,16 @@ The impact of imputing missing data was to produce values and plots that were mo
 
 ## Are there differences in activity patterns between weekdays and weekends?  
 
-Using dataset with **imputed** values to recalculate the *average steps* taken each day:  
-
-```r
-actInterval <- ddply(activity, .(interval), summarize, meanSteps = round(mean(steps, 
-    na.rm = TRUE), 0))
-actMerge <- join(x = activity, y = actInterval, by = "interval")
-```
-
-
-
-Compute a **wkday** factor variable consisting of either *weekday* or *weekend* values.  
+Create a **wkday** factor variable consisting of either *weekday* or *weekend* values.  
 
 ```r
 activity$wkday <- factor(ifelse(isWeekday(activity$date), paste("weekday"), 
     paste("weekend")))
+```
+
+Using dataset with **imputed** values to recalculate the *average steps* taken each day:  
+
+```r
 actIntDay <- ddply(activity[activity$wkday == "weekday", ], .(interval), summarize, 
     meanSteps = round(mean(steps, na.rm = TRUE), 0))
 actIntEnd <- ddply(activity[activity$wkday == "weekend", ], .(interval), summarize, 
