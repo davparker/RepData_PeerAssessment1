@@ -53,11 +53,10 @@ summary(activity)
 ## What is mean total number of steps taken per day?
 
 ```r
-actDaily <- ddply(activity, .(date), summarize, dailySteps = sum(steps, na.rm = TRUE), 
-    meanInt = round(mean(steps, na.rm = TRUE), 0))
+actDaily <- ddply(activity, .(date), summarize, dailySteps = sum(steps, na.rm = TRUE))
 ```
 
-*Histogram* of *average* daily *steps*:  
+*Histogram* of *total* daily *steps*:  
 
 ```r
 ggplot(actDaily, aes(x = dailySteps)) + geom_histogram(binwidth = 710)
@@ -65,7 +64,7 @@ ggplot(actDaily, aes(x = dailySteps)) + geom_histogram(binwidth = 710)
 
 <img src="figure/unnamed-chunk-4.png" title="plot of chunk unnamed-chunk-4" alt="plot of chunk unnamed-chunk-4" style="display: block; margin: auto;" />
 
-*Mean* daily *steps*:  
+**Mean** daily *steps*:  
 
 ```r
 round(mean(actDaily$dailySteps, na.rm = TRUE), 0)
@@ -75,7 +74,7 @@ round(mean(actDaily$dailySteps, na.rm = TRUE), 0)
 [1] 9354
 ```
 
-*Median* daily *steps*:  
+**Median** daily *steps*:  
 
 ```r
 round(median(actDaily$dailySteps, na.rm = TRUE), 0)
@@ -86,21 +85,22 @@ round(median(actDaily$dailySteps, na.rm = TRUE), 0)
 ```
 
 
-## What is the average daily activity pattern?
-Calculate the *mean* *steps* for each *interval*:  
+## What is the average daily activity pattern?  
+
+**Calculate** the *mean* *steps* for each *interval*:  
 
 ```r
 actInterval <- ddply(activity, .(interval), summarize, meanSteps = round(mean(steps, 
     na.rm = TRUE), 0))
 ```
 
-Merge the *mean* *steps* for each *interval* with the *activity* data frame:  
+**Merge** the *mean* *steps* for each *interval* with the *activity* data frame:  
 
 ```r
 actMerge <- join(x = activity, y = actInterval, by = "interval")
 ```
 
-Plot of the 5-minute interval and the average number of steps taken, averaged across all days:  
+**Plot** of the *5-minute* interval and the *average* number of *steps* taken, *averaged* across all  days:  
 
 ```r
 ggplot(actMerge, aes(x = interval, y = meanSteps)) + geom_line()
@@ -108,7 +108,7 @@ ggplot(actMerge, aes(x = interval, y = meanSteps)) + geom_line()
 
 <img src="figure/unnamed-chunk-9.png" title="plot of chunk unnamed-chunk-9" alt="plot of chunk unnamed-chunk-9" style="display: block; margin: auto;" />
 
-Five minute *interval* across all days with the **most** steps:  
+Five minute *interval* across all days with the **most** *steps*:  
 
 ```r
 actMerge[which.max(actMerge$steps), c("steps", "date", "interval")]
@@ -121,7 +121,8 @@ actMerge[which.max(actMerge$steps), c("steps", "date", "interval")]
 
 
 ## Imputing missing values  
-*Total* number of rows with **missing** values is:  
+
+**Total** number of rows with **missing** values is:  
 
 ```r
 nrow(activity) - nrow(na.omit(activity))
@@ -142,14 +143,13 @@ actMerge[which(is.na(actMerge$steps)), ]$steps <- actMerge[which(is.na(actMerge$
 activity <- actMerge[, c("steps", "date", "interval")]
 ```
 
-Recompute the *mean* and *median* daily *steps* with imputed values.  
+Recompute the *mean* and *median* daily *steps* with **imputed** values.  
 
 ```r
-actDaily <- ddply(activity, .(date), summarize, dailySteps = sum(steps, na.rm = TRUE), 
-    meanInt = round(mean(steps, na.rm = TRUE), 0))
+actDaily <- ddply(activity, .(date), summarize, dailySteps = sum(steps, na.rm = TRUE))
 ```
 
-Histogram of *daily steps* using imputed values:  
+**Histogram** of *total* daily *steps* using *imputed* values:  
 
 ```r
 ggplot(actDaily, aes(x = dailySteps)) + geom_histogram(binwidth = 710)
@@ -158,7 +158,7 @@ ggplot(actDaily, aes(x = dailySteps)) + geom_histogram(binwidth = 710)
 <img src="figure/unnamed-chunk-14.png" title="plot of chunk unnamed-chunk-14" alt="plot of chunk unnamed-chunk-14" style="display: block; margin: auto;" />
 
 
-Mean daily *steps*:  
+**Mean** daily *steps*, *imputed* values:  
 
 ```r
 round(mean(actDaily$dailySteps, na.rm = TRUE), 0)
@@ -168,7 +168,7 @@ round(mean(actDaily$dailySteps, na.rm = TRUE), 0)
 [1] 10766
 ```
 
-Median daily *steps*:  
+**Median** daily *steps*, *imputed* values:  
 
 ```r
 round(median(actDaily$dailySteps, na.rm = TRUE), 0)
@@ -182,7 +182,7 @@ The impact of imputing missing data was to produce values and plots that were mo
 
 ## Are there differences in activity patterns between weekdays and weekends?  
 
-Using dataset with imputed missing values recalculate the average steps taken each day:  
+Using dataset with **imputed** values to recalculate the *average steps* taken each day:  
 
 ```r
 actInterval <- ddply(activity, .(interval), summarize, meanSteps = round(mean(steps, 
@@ -192,8 +192,7 @@ actMerge <- join(x = activity, y = actInterval, by = "interval")
 
 
 
-Compute a *wkday* factor variable consisting of either *weekday* or *weekend* values.  
-
+Compute a **wkday** factor variable consisting of either *weekday* or *weekend* values.  
 
 ```r
 activity$wkday <- factor(ifelse(isWeekday(activity$date), paste("weekday"), 
@@ -208,7 +207,7 @@ actMerge <- rbind(actMergDay[actMergDay$wkday == "weekday", ], actMergEnd[actMer
     "weekend", ])
 ```
 
-Plot of the 5-minute interval and the average number of steps taken, averaged across all days  using *wkday* factor as the facet, wrapping on rows:  
+**Plot** of the 5-minute interval and the average number of steps taken, averaged across all days  using *wkday* factor as the facet, wrapping on rows:  
 
 ```r
 ggplot(actMerge, aes(x = interval, y = meanSteps)) + geom_line() + facet_wrap(~wkday, 
@@ -217,4 +216,4 @@ ggplot(actMerge, aes(x = interval, y = meanSteps)) + geom_line() + facet_wrap(~w
 
 <img src="figure/unnamed-chunk-19.png" title="plot of chunk unnamed-chunk-19" alt="plot of chunk unnamed-chunk-19" style="display: block; margin: auto;" />
   
-The patterns were very similar with the weekend showing a more "relaxed" appearance which would seem to be expected.  
+The patterns were very similar with the weekend showing a more "relaxed" overall appearance which would seem to be expected.  
