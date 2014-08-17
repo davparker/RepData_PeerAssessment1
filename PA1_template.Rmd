@@ -126,8 +126,16 @@ actMerge <- join(x = activity, y = actInterval, by = 'interval')
 Compute a *wkday* factor variable consisting of either *weekday* or *weekend* values.  
 
 ```{r}
-actMerge$wkday <- factor(
-  ifelse(isWeekday(actMerge$date), paste('weekday'), paste('weekend') ))
+activity$wkday <- factor(
+  ifelse(isWeekday(activity$date), paste('weekday'), paste('weekend') ))
+actIntDay <- ddply(activity[activity$wkday == 'weekday',], .(interval), summarize, 
+                     meanSteps = round(mean(steps, na.rm = TRUE), 0))
+actIntEnd <- ddply(activity[activity$wkday == 'weekend',], .(interval), summarize, 
+                   meanSteps = round(mean(steps, na.rm = TRUE), 0))
+actMergDay <- join(x = activity, y = actIntDay, by = 'interval')
+actMergEnd <- join(x = activity, y = actIntEnd, by = 'interval')
+actMerge <- 
+  rbind(actMergDay[actMergDay$wkday == 'weekday',], actMergEnd[actMergEnd$wkday == 'weekend',])
 ```  
 
 Plot of the 5-minute interval and the average number of steps taken, averaged across all days  using *wkday* factor as the facet, wrapping on rows:  
@@ -136,4 +144,4 @@ ggplot(actMerge, aes(x = interval, y = meanSteps)) +
        geom_line() + facet_wrap(~wkday, nrow = 2)
 ```  
   
-The patterns were very similar with negligible differeces even though actual step counts were different.
+The patterns were very similar with the weekend showing a more "relaxed" appearance which would seem to be expected.  

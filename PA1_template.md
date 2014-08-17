@@ -9,6 +9,10 @@ output: html_document
 library(plyr)
 library(ggplot2)
 library(timeDate)
+library(knitr)
+opts_knit$set(progress = FALSE)
+opts_chunk$set(echo = TRUE, message = FALSE, tidy = TRUE, comment = NA, fig.path = "figure/", 
+    fig.keep = "high", fig.width = 10, fig.height = 6, fig.align = "center")
 activity <- read.csv("activity.csv", colClasses = c("integer", "Date", "integer"), 
     stringsAsFactors = FALSE)
 activity$date <- as.POSIXlt(activity$date, tz = "", "%Y%m%d")
@@ -176,7 +180,17 @@ round(median(actDaily$dailySteps, na.rm = TRUE), 0)
 
 The impact of imputing missing data was to produce values and plots that were more inline with average steps values. This makes sense due to the fact that I computed mean steps for corresponding intervals for the missing values. The estimates for mean and median and resulting histogram were inline with the averages.  
 
-## Are there differences in activity patterns between weekdays and weekends?
+## Are there differences in activity patterns between weekdays and weekends?  
+
+Using dataset with imputed missing values recalculate the average steps taken each day:  
+
+```r
+actInterval <- ddply(activity, .(interval), summarize, meanSteps = round(mean(steps, 
+    na.rm = TRUE), 0))
+actMerge <- join(x = activity, y = actInterval, by = "interval")
+```
+
+
 
 Compute a *wkday* factor variable consisting of either *weekday* or *weekend* values.  
 
@@ -184,15 +198,23 @@ Compute a *wkday* factor variable consisting of either *weekday* or *weekend* va
 ```r
 activity$wkday <- factor(ifelse(isWeekday(activity$date), paste("weekday"), 
     paste("weekend")))
+actIntDay <- ddply(activity[activity$wkday == "weekday", ], .(interval), summarize, 
+    meanSteps = round(mean(steps, na.rm = TRUE), 0))
+actIntEnd <- ddply(activity[activity$wkday == "weekend", ], .(interval), summarize, 
+    meanSteps = round(mean(steps, na.rm = TRUE), 0))
+actMergDay <- join(x = activity, y = actIntDay, by = "interval")
+actMergEnd <- join(x = activity, y = actIntEnd, by = "interval")
+actMerge <- rbind(actMergDay[actMergDay$wkday == "weekday", ], actMergEnd[actMergEnd$wkday == 
+    "weekend", ])
 ```
 
-Plot a line chart using *wkday* factor as the facet, wrapping on rows:  
+Plot of the 5-minute interval and the average number of steps taken, averaged across all days  using *wkday* factor as the facet, wrapping on rows:  
 
 ```r
-ggplot(activity, aes(x = interval, y = steps)) + geom_line() + facet_wrap(~wkday, 
+ggplot(actMerge, aes(x = interval, y = meanSteps)) + geom_line() + facet_wrap(~wkday, 
     nrow = 2)
 ```
 
-<img src="figure/unnamed-chunk-18.png" title="plot of chunk unnamed-chunk-18" alt="plot of chunk unnamed-chunk-18" style="display: block; margin: auto;" />
+<img src="figure/unnamed-chunk-19.png" title="plot of chunk unnamed-chunk-19" alt="plot of chunk unnamed-chunk-19" style="display: block; margin: auto;" />
   
-The patterns were similar in many respects other than the overall step counts seemed to be consistently higher for the weekdays. The weekends were a bit more relaxed in appearance as one might expect for days off work.  
+The patterns were very similar with the weekend showing a more "relaxed" appearance which would seem to be expected.  
